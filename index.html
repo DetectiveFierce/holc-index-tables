@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f1220">
+  <title>School Maps</title>
+  <meta name="description" content="Choose between the School Maps table explorer and spatial viewer.">
+  <link rel="stylesheet" href="map/vendor/fonts/inter.css">
+  <style>
+    :root {
+      --bg-canvas: #07070d;
+      --border: #2e3755;
+      --border-light: #43517a;
+      --text-primary: #f6f4ff;
+      --text-secondary: #babed3;
+      --accent: #c26bff;
+      --accent-strong: #d9a0ff;
+      --accent-dim: rgba(194, 107, 255, 0.16);
+      --accent-outline: rgba(194, 107, 255, 0.52);
+      --accent-ink: #171329;
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: var(--font);
+      color: var(--text-primary);
+      background:
+        radial-gradient(900px 500px at 8% -5%, rgba(194, 107, 255, 0.22), transparent 66%),
+        radial-gradient(780px 460px at 96% -10%, rgba(132, 72, 196, 0.14), transparent 70%),
+        linear-gradient(175deg, #0b0d15, var(--bg-canvas));
+    }
+
+    main {
+      width: min(420px, 100%);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(30px, 6vw, 44px);
+      letter-spacing: -0.05em;
+    }
+
+    p {
+      margin-top: 10px;
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    .actions {
+      display: grid;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+    }
+
+    .primary {
+      background: linear-gradient(138deg, var(--accent-strong), var(--accent));
+      color: var(--accent-ink);
+    }
+
+    .secondary {
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-primary);
+    }
+
+    .secondary:hover {
+      border-color: var(--border-light);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .primary:hover,
+    .secondary:hover {
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>School Maps</h1>
+    <p>Select a view.</p>
+    <div class="actions">
+      <a class="primary" href="./map/">Map</a>
+      <a class="secondary" href="./table/">Table</a>
+    </div>
+  </main>
+</body>
+</html>

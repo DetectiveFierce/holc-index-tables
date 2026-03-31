@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f1220">
+  <title>School Response Data Viewer</title>
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css" />
+  <link rel="stylesheet" href="vendor/fonts/inter.css">
+  <link rel="stylesheet" href="styles.css?v=20260211-14">
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <nav class="site-switcher" aria-label="Site sections">
+        <a class="site-link" href="../">Home</a>
+        <a class="site-link" href="../table/">Table</a>
+        <a class="site-link is-active" href="./" aria-current="page">Map</a>
+      </nav>
+      <div class="title-row">
+        <h1>School Maps <span class="accent">Viewer</span></h1>
+        <span class="badge" id="record-count">Loading…</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <button id="btn-toggle-sidebar" class="btn btn-ghost" title="Collapse sidebar" aria-expanded="true">☰ Hide Sidebar</button>
+      <button id="btn-reset" class="btn btn-ghost" title="Reset all filters">⟳ Reset</button>
+      <button id="btn-export" class="btn btn-primary" title="Export filtered data">↓ Export CSV</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Sidebar -->
+    <aside id="query-panel">
+      <div class="sidebar-tabs" role="tablist" aria-label="Sidebar tools">
+        <button id="tab-filters" class="sidebar-tab is-active" type="button" role="tab" aria-controls="sidebar-panel-filters" aria-selected="true" data-tab="filters">Filters</button>
+        <button id="tab-layers" class="sidebar-tab" type="button" role="tab" aria-controls="sidebar-panel-layers" aria-selected="false" data-tab="layers">Layers</button>
+      </div>
+
+      <div id="sidebar-panel-filters" class="sidebar-panel is-active" role="tabpanel" aria-labelledby="tab-filters">
+        <div class="panel-section">
+          <h3>Text Search</h3>
+          <input type="text" id="search-school" placeholder="Search school name…" class="input-field">
+        </div>
+
+        <div class="panel-section">
+          <h3>Geography</h3>
+          <label>State</label>
+          <select id="filter-state" class="input-field"><option value="">All States</option></select>
+          <label>City</label>
+          <select id="filter-city" class="input-field"><option value="">All Cities</option></select>
+        </div>
+
+        <div class="panel-section">
+          <h3>Demographics</h3>
+          <label>Predominant Racial Group</label>
+          <select id="filter-race" class="input-field"><option value="">All Groups</option></select>
+          <label>Median Household Income</label>
+          <div class="range-row">
+            <input type="number" id="income-min" placeholder="Min" class="input-field input-half">
+            <span class="range-sep">–</span>
+            <input type="number" id="income-max" placeholder="Max" class="input-field input-half">
+          </div>
+          <label>HS Diploma Rate (%)</label>
+          <div class="range-row">
+            <input type="number" id="diploma-min" placeholder="Min" class="input-field input-half" step="0.1">
+            <span class="range-sep">–</span>
+            <input type="number" id="diploma-max" placeholder="Max" class="input-field input-half" step="0.1">
+          </div>
+          <label>Gini Index</label>
+          <div class="range-row">
+            <input type="number" id="gini-min" placeholder="Min" class="input-field input-half" step="0.01">
+            <span class="range-sep">–</span>
+            <input type="number" id="gini-max" placeholder="Max" class="input-field input-half" step="0.01">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>HOLC Grades</h3>
+          <div class="checkbox-grid">
+            <label class="chip"><input type="checkbox" value="A" class="holc-filter" checked> <span class="chip-label grade-a">A</span></label>
+            <label class="chip"><input type="checkbox" value="B" class="holc-filter" checked> <span class="chip-label grade-b">B</span></label>
+            <label class="chip"><input type="checkbox" value="C" class="holc-filter" checked> <span class="chip-label grade-c">C</span></label>
+            <label class="chip"><input type="checkbox" value="D" class="holc-filter" checked> <span class="chip-label grade-d">D</span></label>
+          </div>
+          <label>Redlining Severity</label>
+          <div class="range-row">
+            <input type="number" id="severity-min" placeholder="Min" class="input-field input-half" step="0.01">
+            <span class="range-sep">–</span>
+            <input type="number" id="severity-max" placeholder="Max" class="input-field input-half" step="0.01">
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h3>Performance</h3>
+          <label>Avg Score</label>
+          <div class="range-row">
+            <input type="number" id="score-min" placeholder="Min" class="input-field input-half" step="0.1">
+            <span class="range-sep">–</span>
+            <input type="number" id="score-max" placeholder="Max" class="input-field input-half" step="0.1">
+          </div>
+          <label>Diversity Score</label>
+          <div class="range-row">
+            <input type="number" id="diversity-min" placeholder="Min" class="input-field input-half" step="0.01">
+            <span class="range-sep">–</span>
+            <input type="number" id="diversity-max" placeholder="Max" class="input-field input-half" step="0.01">
+          </div>
+        </div>
+      </div>
+
+      <div id="sidebar-panel-layers" class="sidebar-panel" role="tabpanel" aria-labelledby="tab-layers">
+        <div id="layer-panel" class="layer-workbench">
+          <div class="panel-section layer-section">
+            <h3>Layer Workspace</h3>
+            <p class="layer-helper">Use toggles to control visibility, then drag to set draw order (top row = top layer).</p>
+            <div class="layer-summary">
+              <span>Visible Layers</span>
+              <span id="layer-active-count" class="badge-small">0</span>
+            </div>
+          </div>
+
+          <div class="panel-section layer-section">
+            <h3>Visibility &amp; Order</h3>
+            <div id="layer-list">
+              <div class="layer-item" draggable="true" data-layer="response">
+                <div class="layer-row">
+                  <span class="drag-handle" title="Drag to reorder">⠿</span>
+                  <label class="layer-toggle">
+                    <input type="checkbox" id="layer-response">
+                    <span>Response Variables</span>
+                  </label>
+                  <button type="button" class="layer-expand-btn" aria-expanded="false" aria-controls="response-sub" title="Show style options">
+                    <span class="chevron" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div id="response-sub" class="layer-options hidden">
+                  <label class="layer-style-label" for="response-metric">Metric</label>
+                  <select id="response-metric" class="input-field input-sm">
+                    <option value="weighted_median_hh_income">Median HH Income</option>
+                    <option value="weighted_pct_hs_diploma">HS Diploma %</option>
+                    <option value="weighted_gini_index">Gini Index</option>
+                    <option value="avg_score">Avg Score</option>
+                    <option value="redlining_severity">Redlining Severity</option>
+                    <option value="diversity_score">Diversity Score</option>
+                    <option value="A">HOLC A %</option>
+                    <option value="B">HOLC B %</option>
+                    <option value="C">HOLC C %</option>
+                    <option value="D">HOLC D %</option>
+                    <option value="total_graded_pct">Total Graded %</option>
+                  </select>
+                  <label class="layer-style-label" for="response-color">Color</label>
+                  <input type="color" id="response-color" class="color-input" value="#ff9b47">
+                  <label class="layer-style-label" for="response-opacity">Opacity <span id="response-opacity-value">30%</span></label>
+                  <input type="range" id="response-opacity" class="opacity-input" min="0.10" max="1" step="0.05" value="0.30">
+                </div>
+              </div>
+              <div class="layer-item" draggable="true" data-layer="holc">
+                <div class="layer-row">
+                  <span class="drag-handle" title="Drag to reorder">⠿</span>
+                  <label class="layer-toggle">
+                    <input type="checkbox" id="layer-holc" checked>
+                    <span>HOLC Grades</span>
+                  </label>
+                  <button type="button" class="layer-expand-btn" aria-expanded="false" aria-controls="layer-options-holc" title="Show style options">
+                    <span class="chevron" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div id="layer-options-holc" class="layer-options hidden">
+                  <label class="layer-style-label" for="holc-color">Color</label>
+                  <input type="color" id="holc-color" class="color-input" value="#58a6ff">
+                  <label class="layer-style-label" for="holc-opacity">Opacity <span id="holc-opacity-value">35%</span></label>
+                  <input type="range" id="holc-opacity" class="opacity-input" min="0.10" max="1" step="0.05" value="0.35">
+                </div>
+              </div>
+              <div class="layer-item" draggable="true" data-layer="catchments">
+                <div class="layer-row">
+                  <span class="drag-handle" title="Drag to reorder">⠿</span>
+                  <label class="layer-toggle">
+                    <input type="checkbox" id="layer-catchments" checked>
+                    <span>School Catchments</span>
+                  </label>
+                  <button type="button" class="layer-expand-btn" aria-expanded="false" aria-controls="layer-options-catchments" title="Show style options">
+                    <span class="chevron" aria-hidden="true"></span>
+                  </button>
+                </div>
+                <div id="layer-options-catchments" class="layer-options hidden">
+                  <label class="layer-toggle sub-toggle">
+                    <input type="checkbox" id="show-unnamed">
+                    <span>Show unnamed catchments</span>
+                  </label>
+                  <label class="layer-style-label" for="catchment-color">Color</label>
+                  <input type="color" id="catchment-color" class="color-input" value="#b7a4c1">
+                  <label class="layer-style-label" for="catchment-opacity">Opacity <span id="catchment-opacity-value">35%</span></label>
+                  <input type="range" id="catchment-opacity" class="opacity-input" min="0.10" max="1" step="0.05" value="0.35">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section layer-section">
+            <h3>Legend</h3>
+            <div id="map-legend" class="hidden"></div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Map + Table Area -->
+    <section id="content-area">
+      <div id="map-container">
+        <div id="map"></div>
+      </div>
+      <div id="table-container">
+        <div id="table-resize-handle" role="separator" aria-label="Resize results table" aria-orientation="horizontal" title="Drag edge to resize table"></div>
+        <div class="table-header">
+          <h3>Results <span id="table-count" class="badge-small"></span></h3>
+          <div class="table-controls">
+            <button id="btn-toggle-table" class="btn btn-sm" title="Collapse table" aria-expanded="true">▾ Hide Table</button>
+            <button id="btn-prev" class="btn btn-sm" disabled>← Prev</button>
+            <span id="page-info">Page 1</span>
+            <button id="btn-next" class="btn btn-sm">Next →</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="results-table">
+            <thead><tr id="table-head"></tr></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script src="vendor/d3.v7.min.js"></script>
+  <script src="app.js?v=20260211-23"></script>
+</body>
+</html>
